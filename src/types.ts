@@ -11,6 +11,7 @@ export interface Product {
   gstSlab: number;
   unit: string;
   image?: string;
+  customFields?: Record<string, string>;
 }
 
 export interface Vendor {
@@ -22,6 +23,7 @@ export interface Vendor {
   gstSlab?: number;
   balance: number;
   dueDate?: string;
+  customFields?: Record<string, string>;
 }
 
 export interface Client {
@@ -31,6 +33,7 @@ export interface Client {
   email?: string;
   balance: number;
   dueDate?: string;
+  customFields?: Record<string, string>;
 }
 
 export interface Transaction {

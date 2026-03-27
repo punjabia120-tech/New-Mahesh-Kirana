@@ -32,6 +32,8 @@ import {
   QrCode,
   Maximize,
   Zap,
+  RefreshCw,
+  ArrowLeft,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -96,7 +98,7 @@ export default function App() {
     gstin: '27AAAAA0000A1Z5',
     email: 'contact@newmaheshkirana.com'
   });
-  const [adminPassword, setAdminPassword] = useState('admin123');
+  const [adminPassword, setAdminPassword] = useState('Dinesh9413');
   const [connectedAccounts, setConnectedAccounts] = useState([
     { id: 1, bank: 'HDFC Bank', accountNo: '**** 4521', balance: 125400, type: 'Savings' },
     { id: 2, bank: 'SBI Bank', accountNo: '**** 8890', balance: 45200, type: 'Current' },
@@ -119,6 +121,7 @@ export default function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [scannerType, setScannerType] = useState<'SALE' | 'PURCHASE' | null>(null);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // --- Logic ---
 
@@ -210,7 +213,7 @@ export default function App() {
         gstin: '27AAAAA0000A1Z5',
         email: 'contact@maheshkirana.com'
       });
-      setAdminPassword('admin123');
+      setAdminPassword('Dinesh9413');
       setConnectedAccounts([
         { id: 1, bank: 'HDFC Bank', accountNo: '**** 4521', balance: 125400, type: 'Savings' },
         { id: 2, bank: 'SBI Bank', accountNo: '**** 8890', balance: 45200, type: 'Current' },
@@ -334,58 +337,173 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-24 md:pb-0 md:pl-64">
-      {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-100 flex-col z-50">
-        <div className="p-6 flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
-          <h1 className="text-xl font-bold text-slate-900">{shopName}</h1>
-        </div>
+      {/* Sidebar (Desktop & Mobile) */}
+      <AnimatePresence>
+        {(showMobileSidebar || window.innerWidth >= 768) && (
+          <>
+            {showMobileSidebar && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowMobileSidebar(false)}
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] md:hidden"
+              />
+            )}
+            <motion.aside 
+              initial={showMobileSidebar ? { x: '-100%' } : false}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className={cn(
+                "fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-100 flex-col z-[70] md:flex",
+                showMobileSidebar ? "flex" : "hidden md:flex"
+              )}
+            >
+              <div className="p-6 flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-white" />
+                  </div>
+                  <h1 className="text-xl font-bold text-slate-900">{shopName}</h1>
+                </div>
+                {showMobileSidebar && (
+                  <button onClick={() => setShowMobileSidebar(false)} className="p-2 text-slate-400 md:hidden">
+                    <X className="w-6 h-6" />
+                  </button>
+                )}
+              </div>
 
-        <nav className="flex-1 px-4 space-y-2">
-          <NavItem icon={<LayoutDashboard />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-          {featureFlags.inventory && <NavItem icon={<Package />} label="Inventory" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />}
-          {featureFlags.billing && <NavItem icon={<ReceiptText />} label="Billing" active={activeTab === 'billing'} onClick={() => setActiveTab('billing')} />}
-          {featureFlags.purchase && <NavItem icon={<ShoppingCart />} label="Purchase" active={activeTab === 'purchase'} onClick={() => setActiveTab('purchase')} />}
-          
-          {role === 'ADMIN' && (
-            <>
-              <div className="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Management</div>
-              {featureFlags.vendors && <NavItem icon={<Users />} label="Vendors" active={activeTab === 'vendors'} onClick={() => setActiveTab('vendors')} />}
-              {featureFlags.clients && <NavItem icon={<Users />} label="Clients" active={activeTab === 'clients'} onClick={() => setActiveTab('clients')} />}
-              {featureFlags.bank && <NavItem icon={<Wallet />} label="Bank & Accounts" active={activeTab === 'bank'} onClick={() => setActiveTab('bank')} />}
-              <NavItem icon={<Settings />} label="Setup" active={activeTab === 'setup'} onClick={() => setActiveTab('setup')} />
-            </>
-          )}
-        </nav>
+              <nav className="flex-1 px-4 space-y-2 overflow-y-auto no-scrollbar custom-scrollbar">
+                <NavItem 
+                  icon={<LayoutDashboard />} 
+                  label="Dashboard" 
+                  active={activeTab === 'dashboard'} 
+                  onClick={() => { setActiveTab('dashboard'); setShowMobileSidebar(false); }} 
+                />
+                {featureFlags.inventory && (
+                  <NavItem 
+                    icon={<Package />} 
+                    label="Inventory" 
+                    active={activeTab === 'inventory'} 
+                    onClick={() => { setActiveTab('inventory'); setShowMobileSidebar(false); }} 
+                  />
+                )}
+                {featureFlags.billing && (
+                  <NavItem 
+                    icon={<ReceiptText />} 
+                    label="Billing" 
+                    active={activeTab === 'billing'} 
+                    onClick={() => { setActiveTab('billing'); setShowMobileSidebar(false); }} 
+                  />
+                )}
+                {featureFlags.purchase && (
+                  <NavItem 
+                    icon={<ShoppingCart />} 
+                    label="Purchase" 
+                    active={activeTab === 'purchase'} 
+                    onClick={() => { setActiveTab('purchase'); setShowMobileSidebar(false); }} 
+                  />
+                )}
+                
+                {role === 'ADMIN' && (
+                  <>
+                    <div className="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Management</div>
+                    {featureFlags.vendors && (
+                      <NavItem 
+                        icon={<Users />} 
+                        label="Vendors" 
+                        active={activeTab === 'vendors'} 
+                        onClick={() => { setActiveTab('vendors'); setShowMobileSidebar(false); }} 
+                      />
+                    )}
+                    {featureFlags.clients && (
+                      <NavItem 
+                        icon={<Users />} 
+                        label="Clients" 
+                        active={activeTab === 'clients'} 
+                        onClick={() => { setActiveTab('clients'); setShowMobileSidebar(false); }} 
+                      />
+                    )}
+                    {featureFlags.bank && (
+                      <NavItem 
+                        icon={<Wallet />} 
+                        label="Bank & Accounts" 
+                        active={activeTab === 'bank'} 
+                        onClick={() => { setActiveTab('bank'); setShowMobileSidebar(false); }} 
+                      />
+                    )}
+                    <NavItem 
+                      icon={<Settings />} 
+                      label="Setup" 
+                      active={activeTab === 'setup'} 
+                      onClick={() => { setActiveTab('setup'); setShowMobileSidebar(false); }} 
+                    />
+                  </>
+                )}
+              </nav>
 
-        <div className="p-4 border-t border-slate-100">
-          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl mb-4">
-            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">
-              {role[0]}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate">{role === 'ADMIN' ? 'Mahesh' : 'Staff'}</p>
-              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{role}</p>
-            </div>
-            <button onClick={() => setRole(null)} className="p-2 text-slate-400 hover:text-rose-500 transition-colors">
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </aside>
+              <div className="p-4 border-t border-slate-100">
+                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl mb-4">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">
+                    {role[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold truncate">{role === 'ADMIN' ? 'Mahesh' : 'Staff'}</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{role}</p>
+                  </div>
+                  <button onClick={() => setRole(null)} className="p-2 text-slate-400 hover:text-rose-500 transition-colors">
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <button className="md:hidden p-2 text-slate-600">
+          <button 
+            onClick={() => setShowMobileSidebar(true)}
+            className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+          >
             <Menu className="w-6 h-6" />
           </button>
+          
+          {activeTab !== 'dashboard' && (
+            <button 
+              onClick={() => setActiveTab('dashboard')}
+              className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors flex items-center gap-2"
+              title="Back to Dashboard"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="hidden sm:inline text-sm font-bold">Back</span>
+            </button>
+          )}
+          
           <h2 className="text-xl font-bold capitalize">{activeTab}</h2>
         </div>
 
         <div className="flex items-center gap-3">
+          <button 
+            onClick={() => {
+              // Simulate refresh
+              const btn = document.getElementById('refresh-btn');
+              if (btn) btn.classList.add('animate-spin');
+              setTimeout(() => {
+                if (btn) btn.classList.remove('animate-spin');
+                alert('Data refreshed successfully!');
+              }, 1000);
+            }}
+            id="refresh-btn"
+            className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+            title="Refresh Data"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
             className="relative p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
@@ -471,12 +589,12 @@ export default function App() {
       </main>
 
       {/* Mobile Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-100 px-4 py-3 flex justify-around items-center z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-100 px-4 py-3 flex items-center justify-around overflow-x-auto no-scrollbar z-50">
         <MobileNavItem icon={<LayoutDashboard />} active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
         <MobileNavItem icon={<Package />} active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />
         <MobileNavItem icon={<ReceiptText />} active={activeTab === 'billing'} onClick={() => setActiveTab('billing')} />
         <MobileNavItem icon={<ShoppingCart />} active={activeTab === 'purchase'} onClick={() => setActiveTab('purchase')} />
-        <MobileNavItem icon={<Menu />} active={['vendors', 'clients', 'bank'].includes(activeTab)} onClick={() => setActiveTab('vendors')} />
+        <MobileNavItem icon={<Menu />} active={['vendors', 'clients', 'bank', 'setup'].includes(activeTab)} onClick={() => setShowMobileSidebar(true)} />
       </nav>
 
       {/* Notifications Overlay */}
@@ -868,7 +986,8 @@ function InventoryView({ products, setProducts, role }: any) {
     stock: 0,
     minQuantity: 0,
     gstSlab: 18,
-    unit: '1kg Pack'
+    unit: '1kg Pack',
+    customFields: {}
   });
 
   const handleOpenAdd = () => {
@@ -881,7 +1000,8 @@ function InventoryView({ products, setProducts, role }: any) {
       stock: 0,
       minQuantity: 0,
       gstSlab: 18,
-      unit: '1kg Pack'
+      unit: '1kg Pack',
+      customFields: {}
     });
     setShowModal(true);
   };
@@ -977,6 +1097,15 @@ function InventoryView({ products, setProducts, role }: any) {
                 </div>
                 <h4 className="font-bold text-slate-900 truncate">{p.name}</h4>
                 <p className="text-xs text-slate-500">{p.unit}</p>
+                {p.customFields && Object.entries(p.customFields).length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {Object.entries(p.customFields).map(([k, v]) => (
+                      <span key={k} className="px-1.5 py-0.5 bg-slate-50 text-[8px] font-bold text-slate-500 rounded border border-slate-100">
+                        {k}: {v as string}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="mt-6 flex items-center justify-between">
@@ -1124,6 +1253,11 @@ function InventoryView({ products, setProducts, role }: any) {
                     />
                   </div>
                 </div>
+
+                <CustomFieldsEditor 
+                  fields={formData.customFields || {}} 
+                  onChange={fields => setFormData({...formData, customFields: fields})} 
+                />
 
                 <div className="flex gap-3 pt-4">
                   <button 
@@ -1577,12 +1711,12 @@ function PurchaseView({ products, setProducts, vendors, setTransactions }: any) 
 }function VendorsView({ vendors, setVendors }: any) {
   const [showModal, setShowModal] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
-  const [formData, setFormData] = useState<Partial<Vendor>>({ name: '', mobile: '', email: '', gstNo: '', gstSlab: 18, balance: 0, dueDate: '' });
+  const [formData, setFormData] = useState<Partial<Vendor>>({ name: '', mobile: '', email: '', gstNo: '', gstSlab: 18, balance: 0, dueDate: '', customFields: {} });
   const [notifying, setNotifying] = useState<string | null>(null);
 
   const handleOpenAdd = () => {
     setEditingVendor(null);
-    setFormData({ name: '', mobile: '', email: '', gstNo: '', gstSlab: 18, balance: 0, dueDate: '' });
+    setFormData({ name: '', mobile: '', email: '', gstNo: '', gstSlab: 18, balance: 0, dueDate: '', customFields: {} });
     setShowModal(true);
   };
 
@@ -1660,6 +1794,15 @@ function PurchaseView({ products, setProducts, vendors, setTransactions }: any) 
                 <Badge variant={v.balance > 0 ? 'error' : 'success'}>
                   {v.balance > 0 ? 'Payment Due' : 'Clear'}
                 </Badge>
+                {v.customFields && Object.entries(v.customFields).length > 0 && (
+                  <div className="flex flex-wrap gap-1 justify-end">
+                    {Object.entries(v.customFields).map(([k, val]) => (
+                      <span key={k} className="px-1.5 py-0.5 bg-slate-50 text-[8px] font-bold text-slate-500 rounded border border-slate-100">
+                        {k}: {val as string}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button 
                     onClick={() => handleOpenEdit(v)}
@@ -1782,6 +1925,11 @@ function PurchaseView({ products, setProducts, vendors, setTransactions }: any) 
                     />
                   </div>
                 </div>
+                <CustomFieldsEditor 
+                  fields={formData.customFields || {}} 
+                  onChange={fields => setFormData({...formData, customFields: fields})} 
+                />
+
                 <div className="flex gap-3 pt-4">
                   <button 
                     type="button"
@@ -1809,12 +1957,12 @@ function PurchaseView({ products, setProducts, vendors, setTransactions }: any) 
 function ClientsView({ clients, setClients }: any) {
   const [showModal, setShowModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [formData, setFormData] = useState({ name: '', mobile: '', email: '', balance: 0, dueDate: '' });
+  const [formData, setFormData] = useState<any>({ name: '', mobile: '', email: '', balance: 0, dueDate: '', customFields: {} });
   const [notifying, setNotifying] = useState<string | null>(null);
 
   const handleOpenAdd = () => {
     setEditingClient(null);
-    setFormData({ name: '', mobile: '', email: '', balance: 0, dueDate: '' });
+    setFormData({ name: '', mobile: '', email: '', balance: 0, dueDate: '', customFields: {} });
     setShowModal(true);
   };
 
@@ -1883,6 +2031,15 @@ function ClientsView({ clients, setClients }: any) {
                 <Badge variant={c.balance > 0 ? 'warning' : 'success'}>
                   {c.balance > 0 ? 'Receivable' : 'Clear'}
                 </Badge>
+                {c.customFields && Object.entries(c.customFields).length > 0 && (
+                  <div className="flex flex-wrap gap-1 justify-end">
+                    {Object.entries(c.customFields).map(([k, val]) => (
+                      <span key={k} className="px-1.5 py-0.5 bg-slate-50 text-[8px] font-bold text-slate-500 rounded border border-slate-100">
+                        {k}: {val as string}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button 
                     onClick={() => handleOpenEdit(c)}
@@ -1985,6 +2142,11 @@ function ClientsView({ clients, setClients }: any) {
                     />
                   </div>
                 </div>
+                <CustomFieldsEditor 
+                  fields={formData.customFields || {}} 
+                  onChange={fields => setFormData({...formData, customFields: fields})} 
+                />
+
                 <div className="flex gap-3 pt-4">
                   <button 
                     type="button"
@@ -2412,14 +2574,27 @@ function SetupView({ shopName, setShopName, shopDetails, setShopDetails, adminPa
                 onChange={(e) => setShopName(e.target.value)}
               />
             </div>
-            <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Password</label>
-              <input 
-                type="password"
-                className="w-full bg-slate-50 border-none rounded-xl p-4 focus:ring-2 focus:ring-emerald-500/20 mt-1"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-              />
+            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+              <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Lock className="w-4 h-4 text-emerald-600" />
+                Security Settings
+              </h4>
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Password</label>
+                <div className="relative mt-1">
+                  <input 
+                    type="password"
+                    className="w-full bg-white border-none rounded-xl p-4 pr-12 focus:ring-2 focus:ring-emerald-500/20"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="Enter new password"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2 ml-1 italic">This password is required for Administrative Access.</p>
+              </div>
             </div>
             <div>
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">GSTIN Number</label>
@@ -2568,5 +2743,78 @@ function MobileNavItem({ icon, active, onClick }: any) {
     >
       {React.cloneElement(icon, { className: "w-6 h-6" })}
     </button>
+  );
+}
+
+function CustomFieldsEditor({ fields, onChange }: { fields: Record<string, string>, onChange: (fields: Record<string, string>) => void }) {
+  const [newKey, setNewKey] = useState('');
+  const [newValue, setNewValue] = useState('');
+
+  const addField = () => {
+    if (newKey.trim()) {
+      onChange({ ...fields, [newKey.trim()]: newValue });
+      setNewKey('');
+      setNewValue('');
+    }
+  };
+
+  const removeField = (key: string) => {
+    const newFields = { ...fields };
+    delete newFields[key];
+    onChange(newFields);
+  };
+
+  return (
+    <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+        <Plus className="w-3 h-3" /> Custom Fields
+      </h4>
+      
+      <div className="space-y-2">
+        {Object.entries(fields || {}).map(([key, value]) => (
+          <div key={key} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-100 group">
+            <div className="flex-1 grid grid-cols-2 gap-2">
+              <span className="text-xs font-bold text-slate-600 truncate">{key}</span>
+              <span className="text-xs text-slate-500 truncate">{value}</span>
+            </div>
+            <button 
+              type="button"
+              onClick={() => removeField(key)}
+              className="p-1 text-slate-300 hover:text-rose-500 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end">
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Field Name</label>
+          <input 
+            className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs focus:ring-2 focus:ring-emerald-500/20"
+            value={newKey}
+            onChange={e => setNewKey(e.target.value)}
+            placeholder="e.g. Color"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Value</label>
+          <input 
+            className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs focus:ring-2 focus:ring-emerald-500/20"
+            value={newValue}
+            onChange={e => setNewValue(e.target.value)}
+            placeholder="e.g. Red"
+          />
+        </div>
+        <button 
+          type="button"
+          onClick={addField}
+          className="p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
   );
 }
