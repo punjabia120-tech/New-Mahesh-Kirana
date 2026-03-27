@@ -1,0 +1,7 @@
+{
+  "name": "New Mahesh Kirana ERP",
+  "description": "A comprehensive retail management system with inventory tracking, GST billing, vendor/client management, and financial insights.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
